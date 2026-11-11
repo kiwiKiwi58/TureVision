@@ -85,7 +85,23 @@ function startTest(id, battery = false) {
   if (id === 'reaction') {
     let times = [], trial = 0, readyAt = 0, phase = 'intro';
     const intro = () => { phase = 'intro'; area.innerHTML = `<div><span class="phase-pill">5 VALID TRIALS</span><h3>빨간색에서 초록색으로 바뀌면 누르세요.</h3><p>초록색이 되기 전에 누르거나, 전환 후 100ms 안에 누르면 점프스타트로 무효 처리됩니다.</p><button class="button button-primary" id="reaction-start"><span class="button-face">준비하기 ↗</span></button></div>`; document.querySelector('#reaction-start').onclick = nextTrial; };
-    const nextTrial = () => { phase = 'wait'; area.innerHTML = `<div class="reaction-pad wait"><p>빨간색 — 기다리세요</p></div>`; const pad = area.querySelector('.reaction-pad'); pad.onclick = () => { if (phase === 'ready') { const elapsed = performance.now() - readyAt; if (elapsed <= 100) { phase = 'jumpstart'; pad.className = 'reaction-pad wait'; pad.innerHTML = '<p>점프스타트 — 100ms 이하, 라운드 무효</p>'; activeTimer = setTimeout(nextTrial, 900); return; } times.push(elapsed); trial++; progress(trial - 1); if (trial >= 5) { const average = Math.round(times.reduce((a,b) => a+b,0) / times.length); const sorted = [...times].sort((a,b)=>a-b); const median = Math.round(sorted[2]); finish(Math.max(0, Math.min(100, (620 - median) / 4.2)), `${median}<small style="font-size:20px"> ms</small>`, '중앙값 반응속도', detailCell('평균', `${average} ms`) + detailCell('최고', `${Math.min(...times).toFixed(0)} ms`) + detailCell('유효 라운드', '5 회')); } else nextTrial(); } else if (phase === 'wait') { clearTimeout(activeTimer); phase = 'false-start'; pad.className = 'reaction-pad wait'; pad.innerHTML = '<p>초록색 전 입력 — 라운드 무효</p>'; activeTimer = setTimeout(nextTrial, 900); } }; activeTimer = setTimeout(() => { if (phase !== 'wait') return; phase = 'ready'; readyAt = performance.now(); pad.className = 'reaction-pad ready'; pad.innerHTML = '<p>초록색 — 지금 누르세요!</p>'; }, 1300 + Math.random() * 2200); };
+    const complete = () => { const average = Math.round(times.reduce((a,b) => a+b,0) / times.length); const sorted = [...times].sort((a,b)=>a-b); const median = Math.round(sorted[2]); finish(Math.max(0, Math.min(100, (620 - median) / 4.2)), `${median}<small style="font-size:20px"> ms</small>`, '중앙값 반응속도', detailCell('평균', `${average} ms`) + detailCell('최고', `${Math.min(...times).toFixed(0)} ms`) + detailCell('유효 라운드', '5 회')); };
+    const nextTrial = () => {
+      phase = 'wait'; area.innerHTML = `<div class="reaction-pad wait"><p>빨간색 — 기다리세요</p></div>`;
+      const pad = area.querySelector('.reaction-pad');
+      pad.onclick = () => {
+        if (phase === 'ready') {
+          const elapsed = performance.now() - readyAt;
+          if (elapsed <= 100) { phase = 'jumpstart'; pad.className = 'reaction-pad wait'; pad.innerHTML = '<p>점프스타트 — 100ms 이하, 라운드 무효</p>'; activeTimer = setTimeout(nextTrial, 900); return; }
+          times.push(elapsed); trial++; progress(trial - 1); phase = 'feedback';
+          pad.className = 'reaction-pad done'; pad.innerHTML = `<p>${trial}라운드 · ${Math.round(elapsed)}ms</p>`;
+          activeTimer = setTimeout(() => { if (trial >= 5) complete(); else nextTrial(); }, 650);
+        } else if (phase === 'wait') {
+          clearTimeout(activeTimer); phase = 'false-start'; pad.className = 'reaction-pad wait'; pad.innerHTML = '<p>초록색 전 입력 — 라운드 무효</p>'; activeTimer = setTimeout(nextTrial, 900);
+        }
+      };
+      activeTimer = setTimeout(() => { if (phase !== 'wait') return; phase = 'ready'; readyAt = performance.now(); pad.className = 'reaction-pad ready'; pad.innerHTML = '<p>초록색 — 지금 누르세요!</p>'; }, 1300 + Math.random() * 2200);
+    };
     intro();
   }
   if (id === 'color') {
