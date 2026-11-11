@@ -28,7 +28,7 @@ app.innerHTML = `
         <p class="eyebrow">VISUAL PERFORMANCE / 01</p>
         <h1>시각 기능 테스트</h1>
         <p class="hero-copy">반응속도, 임계융합주파수, 색채 인식, 대비 감도를 간단히 확인해보세요.</p>
-        <div class="hero-actions"><button class="button button-primary" id="start-all">전체 테스트 시작 <span class="arrow">↗</span></button><a class="button button-quiet" href="#tests">테스트 둘러보기 <span class="arrow">↓</span></a></div>
+        <div class="hero-actions"><button class="button button-primary" id="start-all"><span class="button-face">전체 테스트 시작 <span class="arrow">↗</span></span></button><a class="button button-quiet" href="#tests"><span class="button-face">테스트 둘러보기 <span class="arrow">↓</span></span></a></div>
         <p class="hero-note">NO SIGN-UP &nbsp;·&nbsp; 100% BROWSER-BASED &nbsp;·&nbsp; 약 2분</p>
       </div>
     </section>
@@ -73,7 +73,7 @@ function startTest(id, battery = false) {
     stopActive(); saveRecord(id, score, value, label);
     const hasNext = battery && batteryQueue && batteryQueue.length;
     const isLast = battery && batteryQueue && !batteryQueue.length;
-    area.innerHTML = `<div><span class="phase-pill">${isLast ? 'BATTERY COMPLETE' : 'TEST COMPLETE'}</span><h3>측정이 끝났어요.</h3><div class="score-big">${value}</div><p>${label}</p><div class="result-details">${detail}</div><button class="button button-primary" id="result-action">${hasNext ? '다음 테스트' : isLast ? '전체 결과 확인' : '완료'} <span class="arrow">${hasNext || isLast ? '↗' : '✓'}</span></button>${note ? `<p class="fine-print">${note}</p>` : ''}</div>`;
+    area.innerHTML = `<div><span class="phase-pill">${isLast ? 'BATTERY COMPLETE' : 'TEST COMPLETE'}</span><h3>측정이 끝났어요.</h3><div class="score-big">${value}</div><p>${label}</p><div class="result-details">${detail}</div><button class="button button-primary" id="result-action"><span class="button-face">${hasNext ? '다음 테스트' : isLast ? '전체 결과 확인' : '완료'} <span class="arrow">${hasNext || isLast ? '↗' : '✓'}</span></span></button>${note ? `<p class="fine-print">${note}</p>` : ''}</div>`;
     document.querySelector('#result-action').addEventListener('click', () => {
       if (hasNext) startTest(batteryQueue.shift(), true);
       else if (isLast) showBatteryResult();
@@ -84,7 +84,7 @@ function startTest(id, battery = false) {
 
   if (id === 'reaction') {
     let times = [], trial = 0, readyAt = 0, phase = 'intro';
-    const intro = () => { phase = 'intro'; area.innerHTML = `<div><span class="phase-pill">5 VALID TRIALS</span><h3>빨간색에서 초록색으로 바뀌면 누르세요.</h3><p>초록색이 되기 전에 누르거나, 전환 후 100ms 안에 누르면 점프스타트로 무효 처리됩니다.</p><button class="button button-primary" id="reaction-start">준비하기 ↗</button></div>`; document.querySelector('#reaction-start').onclick = nextTrial; };
+    const intro = () => { phase = 'intro'; area.innerHTML = `<div><span class="phase-pill">5 VALID TRIALS</span><h3>빨간색에서 초록색으로 바뀌면 누르세요.</h3><p>초록색이 되기 전에 누르거나, 전환 후 100ms 안에 누르면 점프스타트로 무효 처리됩니다.</p><button class="button button-primary" id="reaction-start"><span class="button-face">준비하기 ↗</span></button></div>`; document.querySelector('#reaction-start').onclick = nextTrial; };
     const nextTrial = () => { phase = 'wait'; area.innerHTML = `<div class="reaction-pad wait"><p>빨간색 — 기다리세요</p></div>`; const pad = area.querySelector('.reaction-pad'); pad.onclick = () => { if (phase === 'ready') { const elapsed = performance.now() - readyAt; if (elapsed <= 100) { phase = 'jumpstart'; pad.className = 'reaction-pad wait'; pad.innerHTML = '<p>점프스타트 — 100ms 이하, 라운드 무효</p>'; activeTimer = setTimeout(nextTrial, 900); return; } times.push(elapsed); trial++; progress(trial - 1); if (trial >= 5) { const average = Math.round(times.reduce((a,b) => a+b,0) / times.length); const sorted = [...times].sort((a,b)=>a-b); const median = Math.round(sorted[2]); finish(Math.max(0, Math.min(100, (620 - median) / 4.2)), `${median}<small style="font-size:20px"> ms</small>`, '중앙값 반응속도', detailCell('평균', `${average} ms`) + detailCell('최고', `${Math.min(...times).toFixed(0)} ms`) + detailCell('유효 라운드', '5 회')); } else nextTrial(); } else if (phase === 'wait') { clearTimeout(activeTimer); phase = 'false-start'; pad.className = 'reaction-pad wait'; pad.innerHTML = '<p>초록색 전 입력 — 라운드 무효</p>'; activeTimer = setTimeout(nextTrial, 900); } }; activeTimer = setTimeout(() => { if (phase !== 'wait') return; phase = 'ready'; readyAt = performance.now(); pad.className = 'reaction-pad ready'; pad.innerHTML = '<p>초록색 — 지금 누르세요!</p>'; }, 1300 + Math.random() * 2200); };
     intro();
   }
@@ -96,7 +96,7 @@ function startTest(id, battery = false) {
     }; run();
   }
   if (id === 'cff') {
-    area.innerHTML = `<div class="tuning-panel"><span class="phase-pill">CONTINUOUS TUNING</span><div class="flicker-disc" id="flicker-disc"></div><h3>깜빡임이 사라지는 지점을 직접 찾아보세요.</h3><p>슬라이더나 숫자를 조절해 원이 안정적으로 보이는 주파수를 맞추세요.</p><p class="cff-refresh" id="cff-refresh">화면 주사율 감지 중…</p><div class="measure-controls"><input id="cff-range" type="range" min="1" max="30" step="1" value="20" aria-label="주파수 조절" disabled><label class="measure-input"><input id="cff-value" type="number" min="1" max="30" step="1" value="20" aria-label="주파수 입력" disabled><span>Hz</span></label></div><button class="button button-primary" id="cff-save" disabled>이 값으로 기록 <span class="arrow">↗</span></button></div>`;
+    area.innerHTML = `<div class="tuning-panel"><span class="phase-pill">CONTINUOUS TUNING</span><div class="flicker-disc" id="flicker-disc"></div><h3>깜빡임이 사라지는 지점을 직접 찾아보세요.</h3><p>슬라이더나 숫자를 조절해 원이 안정적으로 보이는 주파수를 맞추세요.</p><p class="cff-refresh" id="cff-refresh">화면 주사율 감지 중…</p><div class="measure-controls"><input id="cff-range" type="range" min="1" max="30" step="1" value="20" aria-label="주파수 조절" disabled><label class="measure-input"><input id="cff-value" type="number" min="1" max="30" step="1" value="20" aria-label="주파수 입력" disabled><span>Hz</span></label></div><button class="button button-primary" id="cff-save" disabled><span class="button-face">이 값으로 기록 <span class="arrow">↗</span></span></button></div>`;
     const disc = document.querySelector('#flicker-disc'), range = document.querySelector('#cff-range'), input = document.querySelector('#cff-value'), refreshLabel = document.querySelector('#cff-refresh'), saveButton = document.querySelector('#cff-save');
     let then = performance.now(), visible = true, refreshHz = 60, maxHz = 30;
     const syncCff = source => { const raw = Number(source.value); if (!Number.isFinite(raw)) return; const value = Math.max(1, Math.min(maxHz, Math.round(raw))); range.value = value; input.value = value; };
@@ -116,7 +116,7 @@ function startTest(id, battery = false) {
       if (refreshHz <= 120) {
         const warning = document.createElement('div');
         warning.className = 'cff-warning'; warning.setAttribute('role', 'alertdialog'); warning.setAttribute('aria-modal', 'true'); warning.setAttribute('aria-labelledby', 'cff-warning-title');
-        warning.innerHTML = `<section class="cff-warning-card"><span class="phase-pill">DISPLAY LIMIT WARNING</span><h2 id="cff-warning-title">모니터 주사율이 낮아 측정 정확도가 떨어질 수 있어요.</h2><p>감지된 주사율은 약 <strong>${refreshHz}Hz</strong>입니다. 120Hz 이하 환경에서는 임계융합주파수를 정확히 측정하기 어려울 수 있습니다. 최대 조절 범위는 주사율의 절반인 <strong>${maxHz}Hz</strong>까지예요.</p><p class="cff-warning-note">참고용 경고이며 테스트는 계속 진행할 수 있습니다.</p><button class="button button-primary" id="cff-warning-continue">확인하고 계속하기 <span class="arrow">↗</span></button></section>`;
+        warning.innerHTML = `<section class="cff-warning-card"><span class="phase-pill">DISPLAY LIMIT WARNING</span><h2 id="cff-warning-title">모니터 주사율이 낮아 측정 정확도가 떨어질 수 있어요.</h2><p>감지된 주사율은 약 <strong>${refreshHz}Hz</strong>입니다. 일반적인 CFF는 약 60Hz 전후인데, 이 화면은 주사율의 절반인 <strong>${maxHz}Hz</strong>까지만 깜빡임을 표현할 수 있어 평균적인 임계점 근처를 정확히 측정하지 못할 수 있습니다.</p><p class="cff-warning-note">참고용 경고이며 테스트는 계속 진행할 수 있습니다.</p><button class="button button-primary" id="cff-warning-continue"><span class="button-face">확인하고 계속하기 <span class="arrow">↗</span></span></button></section>`;
         modalRoot.querySelector('.modal').append(warning);
         warning.querySelector('#cff-warning-continue').addEventListener('click', () => { warning.remove(); enableControls(); });
         warning.querySelector('#cff-warning-continue').focus();
@@ -127,7 +127,7 @@ function startTest(id, battery = false) {
     saveButton.addEventListener('click', () => { const hz = Number(input.value); const score = Math.round(hz / maxHz * 100); finish(score, `${hz}<small style="font-size:20px"> Hz</small>`, '직접 조절한 융합 지점', detailCell('입력 주파수', `${hz} Hz`) + detailCell('감지 주사율', `약 ${refreshHz} Hz`) + detailCell('허용 상한', `${maxHz} Hz`), '브라우저가 감지한 화면 갱신 주기를 기준으로 상한을 제한했습니다. 실제 모니터 주사율과 깜빡임 표현은 환경에 따라 다를 수 있습니다.'); });
   }
   if (id === 'contrast') {
-    area.innerHTML = `<div class="tuning-panel"><span class="phase-pill">CONTINUOUS TUNING</span><div class="contrast-target" id="contrast-target"></div><h3>원이 간신히 보이는 대비를 찾아보세요.</h3><p>슬라이더나 숫자를 조절해 원이 보이기 시작하는 최소 대비값을 맞추세요.</p><div class="measure-controls"><input id="contrast-range" type="range" min="0" max="50" step="0.1" value="25" aria-label="대비 조절"><label class="measure-input"><input id="contrast-value" type="number" min="0" max="50" step="0.1" value="25" aria-label="대비 입력"><span>%</span></label></div><button class="button button-primary" id="contrast-save">이 값으로 기록 <span class="arrow">↗</span></button></div>`;
+    area.innerHTML = `<div class="tuning-panel"><span class="phase-pill">CONTINUOUS TUNING</span><div class="contrast-target" id="contrast-target"></div><h3>원이 간신히 보이는 대비를 찾아보세요.</h3><p>슬라이더나 숫자를 조절해 원이 보이기 시작하는 최소 대비값을 맞추세요.</p><div class="measure-controls"><input id="contrast-range" type="range" min="0" max="50" step="0.1" value="25" aria-label="대비 조절"><label class="measure-input"><input id="contrast-value" type="number" min="0" max="50" step="0.1" value="25" aria-label="대비 입력"><span>%</span></label></div><button class="button button-primary" id="contrast-save"><span class="button-face">이 값으로 기록 <span class="arrow">↗</span></span></button></div>`;
     const target = document.querySelector('#contrast-target'), range = document.querySelector('#contrast-range'), input = document.querySelector('#contrast-value');
     const syncContrast = source => { const raw = Number(source.value); if (!Number.isFinite(raw)) return; const value = Math.max(0, Math.min(50, Math.round(raw * 10) / 10)); range.value = value; input.value = value.toFixed(1); target.style.background = `rgba(205,233,218,${value / 100})`; target.style.borderColor = `rgba(205,233,218,${value / 100})`; };
     syncContrast(range); range.addEventListener('input', () => syncContrast(range)); input.addEventListener('input', () => syncContrast(input)); input.addEventListener('change', () => syncContrast(input));
@@ -139,6 +139,6 @@ function showBatteryResult() {
   const records = loadRecords(), entries = tests.map(test => records[test.id]).filter(Boolean), score = entries.length ? Math.round(entries.reduce((sum, entry) => sum + entry.score, 0) / entries.length) : 0;
   const breakdown = tests.map(test => { const record = records[test.id]; return `<div class="result-detail"><span>${test.title}</span><strong>${record ? record.value : '—'}</strong></div>`; }).join('');
   const area = document.querySelector('#test-area');
-  area.innerHTML = `<div><span class="phase-pill">VISUAL PERFORMANCE</span><h3>오늘의 시각 퍼포먼스</h3><div class="score-big">${score}<small style="font-size:20px"> / 100</small></div><p>완료한 4개 항목의 단순 평균 점수입니다.</p><div class="result-details" style="grid-template-columns:repeat(2,1fr)">${breakdown}</div><button class="button button-primary" id="battery-done">확인 <span class="arrow">✓</span></button><p class="fine-print">이 점수는 TureVision 테스트의 상대적 참고값이며, 인구 집단 기준 백분위나 의학적 평가가 아닙니다.</p></div>`;
+  area.innerHTML = `<div><span class="phase-pill">VISUAL PERFORMANCE</span><h3>오늘의 시각 퍼포먼스</h3><div class="score-big">${score}<small style="font-size:20px"> / 100</small></div><p>완료한 4개 항목의 단순 평균 점수입니다.</p><div class="result-details" style="grid-template-columns:repeat(2,1fr)">${breakdown}</div><button class="button button-primary" id="battery-done"><span class="button-face">확인 <span class="arrow">✓</span></span></button><p class="fine-print">이 점수는 TureVision 테스트의 상대적 참고값이며, 인구 집단 기준 백분위나 의학적 평가가 아닙니다.</p></div>`;
   document.querySelector('#battery-done').onclick = closeModal;
 }
